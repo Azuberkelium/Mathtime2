@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maths Time Machine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c;
+            color: #f0f4f8;
+            transition: background-color 0.5s ease;
+        }
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+        .time-machine {
+            background: #2d3748;
+            border-radius: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            padding: 3rem;
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .time-machine.shake {
+            animation: shake 0.2s infinite;
+        }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .digital-display {
+            background-color: #1f2937;
+            color: #48bb78;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 0.2rem;
+            margin-bottom: 2rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.5s ease;
+        }
+        .go-button, .stop-button, .explore-button {
+            transition: all 0.3s ease;
+        }
+        .go-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+        .go-button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        .stop-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+        .stop-button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .modal-content {
+            background: #2d3748;
+            color: #f0f4f8;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="container">
+        <!-- Main Time Machine Interface -->
+        <div class="time-machine">
+            <h1 class="text-4xl font-bold mb-2">Maths Time Machine</h1>
+            <p class="text-gray-400 mb-6">Press 'GO' to travel to a random mathematical discovery!</p>
+            
+            <!-- Digital Display -->
+            <div id="yearDisplay" class="digital-display mb-8">
+                2025
+            </div>
+
+            <!-- Control Buttons -->
+            <div class="flex justify-center space-x-4">
+                <button id="goButton" class="go-button bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300">
+                    GO
+                </button>
+                <button id="stopButton" class="stop-button bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300" disabled>
+                    STOP
+                </button>
+            </div>
+            
+            <!-- New Explore button -->
+            <button id="exploreButton" class="explore-button mt-4 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 hidden">
+                Explore
+            </button>
+        </div>
+
+        <!-- Postcards Section -->
+        <div id="postcardsSection" class="mt-8 bg-gray-800 p-6 rounded-2xl shadow-lg w-full max-w-6xl">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
+                <h2 class="text-3xl font-bold">Postcards from the Past</h2>
+                <div class="flex items-center space-x-4">
+                    <span id="discoveryCounter" class="text-lg font-semibold text-blue-400">0 / 50 Discoveries</span>
+                    <button id="resetButton" class="go-button bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300">
+                        Reset
+                    </button>
+                </div>
+            </div>
+            <div id="postcardsContainer" class="flex flex-wrap gap-4 justify-center">
+                <p id="noPostcards" class="text-gray-400 italic">No journeys yet. Press 'GO' to collect your first postcard!</p>
+            </div>
+        </div>
+
+        <!-- Modal for Event Details -->
+        <div id="modal" class="modal hidden">
+            <div class="modal-content">
+                <h3 id="modalTitle" class="text-2xl font-bold mb-2 text-blue-400"></h3>
+                <p id="modalEvent" class="text-lg text-gray-200 mb-4"></p>
+                <p id="modalWho" class="text-sm text-gray-400 mb-1"></p>
+                <p id="modalWhen" class="text-sm text-gray-400"></p>
+                <div class="mt-4 border-t border-gray-600 pt-4">
+                    <button id="moreDetailsBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition duration-300 w-full mb-2">
+                        See More Details
+                    </button>
+                    <div id="additionalDetails" class="hidden text-sm text-gray-300 p-2 rounded-lg bg-gray-700"></div>
+                </div>
+                <div class="flex justify-end mt-4">
+                    <button id="closeModal" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full transition duration-300">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="modal hidden">
+            <div class="modal-content text-center">
+                <h3 class="text-2xl font-bold mb-4 text-red-400">Are you sure?</h3>
+                <p class="text-lg mb-6">This will permanently clear all of your collected postcards.</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="confirmResetButton" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full transition duration-300">
+                        Yes, Reset
+                    </button>
+                    <button id="cancelResetButton" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-full transition duration-300">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const events = [
+            { year: -3000, title: 'The Rhind Papyrus', who: 'Ancient Egyptians', description: 'One of the oldest surviving mathematical texts, containing problems that deal with arithmetic, geometry, and algebra.', additionalDetails: 'The papyrus is named after Alexander Henry Rhind, an antiquarian from Scotland who purchased it in 1858. It is now housed in the British Museum.' },
+            { year: -600, title: 'Pythagorean Theorem', who: 'Pythagoras of Samos', description: 'The fundamental relationship in Euclidean geometry among the three sides of a right triangle.', additionalDetails: 'While named after Pythagoras, the theorem was known and used by ancient Babylonians and Indians long before his time. His contribution was providing a formal proof.' },
+            { year: -300, title: 'Elements', who: 'Euclid', description: 'A mathematical and geometric treatise consisting of 13 books, which has been the main textbook for teaching mathematics for over 2,000 years.', additionalDetails: 'Euclid\'s "Elements" is one of the most influential works in the history of mathematics, presenting geometry in an ideal axiomatic form. It also includes concepts from number theory.' },
+            { year: 250, title: 'Arithmetica', who: 'Diophantus of Alexandria', description: 'A work on finding integer solutions to algebraic equations, leading to the study of Diophantine equations.', additionalDetails: 'Diophantus is often called the "father of algebra." He introduced syncopated algebra, a transition between rhetorical and symbolic algebra, using some symbols for abbreviations.' },
+            { year: 499, title: 'Aryabhatiya', who: 'Aryabhata', description: 'A major work on mathematics and astronomy, which included contributions to trigonometry, algebra, and the calculation of pi.', additionalDetails: 'Aryabhata correctly calculated the value of pi to four decimal places as $3.1416$, and also laid the groundwork for the modern sine function.' },
+            { year: 820, title: 'The Compendious Book on Calculation by Completion and Balancing', who: 'Muhammad ibn Musa al-Khwarizmi', description: 'This book introduced algebra as a formal discipline and gave the word "algebra" its name.', additionalDetails: 'The word "algebra" comes from the Arabic word "al-jabr," meaning "reunion of broken parts," which refers to one of the operations used in the book to solve equations.' },
+            { year: 1202, title: 'Liber Abaci (Book of Calculation)', who: 'Leonardo Fibonacci', description: 'This book introduced the Hindu-Arabic numeral system to Europe and popularized the Fibonacci sequence.', additionalDetails: 'The Fibonacci sequence, where each number is the sum of the two preceding ones, was originally used in "Liber Abaci" to model the growth of a rabbit population.' },
+            { year: 1614, title: 'Logarithms', who: 'John Napier', description: 'Invented logarithms to simplify calculations, which had a profound effect on science and mathematics.', additionalDetails: 'Napier\'s logarithms simplified complex multiplication and division problems, making astronomical calculations much easier for scientists like Johannes Kepler.' },
+            { year: 1637, title: 'Analytic Geometry', who: 'René Descartes and Pierre de Fermat', description: 'The discovery of linking geometry and algebra, which led to the creation of the Cartesian coordinate system.', additionalDetails: 'The Cartesian coordinate system is named after Descartes. This fusion of algebra and geometry was a revolutionary step that paved the way for calculus.' },
+            { year: 1665, title: 'Calculus', who: 'Isaac Newton and Gottfried Leibniz', description: 'Independently developed the fundamental concepts of differential and integral calculus, a cornerstone of modern science and engineering.', additionalDetails: 'Newton and Leibniz developed their versions of calculus independently. The modern notation used today (like $\int$ for integration) was developed by Leibniz.' },
+            { year: 1735, title: 'The Seven Bridges of Königsberg', who: 'Leonhard Euler', description: 'Euler\'s famous solution to this problem is considered the first theorem of graph theory.', additionalDetails: 'The problem asked if it was possible to walk through the city of Königsberg, crossing each of its seven bridges exactly once. Euler proved it was impossible, laying the foundation for topology.' },
+            { year: 1829, title: 'Non-Euclidean Geometry', who: 'Nikolai Lobachevsky', description: 'Developed a form of hyperbolic geometry in which Euclid\'s fifth postulate is replaced by an alternative, leading to the discovery that other consistent geometries are possible.', additionalDetails: 'Lobachevsky\'s work showed that Euclid\'s parallel postulate was not necessary for a consistent geometric system. His work was initially met with resistance but later became essential for modern physics.' },
+            { year: 1854, title: 'Boolean Algebra', who: 'George Boole', description: 'A system of algebraic logic, which became fundamental to computer science and digital circuit design.', additionalDetails: 'Boolean algebra is a branch of algebra where the values of the variables are the truth values "true" and "false." It is the foundation of all modern digital electronics and programming.' },
+            { year: 1859, title: 'The Riemann Hypothesis', who: 'Bernhard Riemann', description: 'A famous conjecture concerning the distribution of prime numbers, still unsolved and one of the most important open problems in mathematics.', additionalDetails: 'The Riemann Hypothesis is one of the seven Millennium Prize Problems, with a one-million-dollar prize for a correct proof or disproof.' },
+            { year: 1872, title: 'Set Theory', who: 'Georg Cantor', description: 'Cantor\'s work laid the foundations for modern set theory, introducing concepts like transfinite numbers.', additionalDetails: 'Cantor\'s work on the nature of infinity was revolutionary but controversial. It established the idea that there are different "sizes" of infinity, such as the set of integers vs. the set of real numbers.' },
+            { year: 1890, title: 'The Continuum Hypothesis', who: 'Georg Cantor', description: 'Cantor conjectured there is no set with cardinality strictly between that of the integers and that of the real numbers. This problem was proven to be independent of the standard axioms of set theory.', additionalDetails: 'This means that the Continuum Hypothesis can neither be proven nor disproven from the standard axioms of mathematics. It is a famous example of an "undecidable" problem.' },
+            { year: 1905, title: '$E=mc^2$', who: 'Albert Einstein', description: 'This famous equation from his theory of special relativity shows the equivalence of mass and energy.', additionalDetails: 'The equation shows that a small amount of mass can be converted into a tremendous amount of energy. It is the basis for nuclear power and atomic bombs.' },
+            { year: 1910, title: 'Principia Mathematica', who: 'Alfred North Whitehead and Bertrand Russell', description: 'An monumental effort to create a logical foundation for mathematics.', additionalDetails: 'This three-volume work attempted to prove all mathematical truths from a set of axioms and logical inference rules. It is a landmark in the philosophy of mathematics.' },
+            { year: 1931, title: 'Gödel\'s Incompleteness Theorems', who: 'Kurt Gödel', description: 'Demonstrated that in any consistent formal system capable of expressing arithmetic, there are true statements that cannot be proven.', additionalDetails: 'Gödel\'s work had a profound impact on the foundations of mathematics, showing that no single axiomatic system could be both complete and consistent in its description of numbers.' },
+            { year: 1944, title: 'Game Theory', who: 'John von Neumann and Oskar Morgenstern', description: 'Published "Theory of Games and Economic Behavior," formalizing game theory as a mathematical field.', additionalDetails: 'Game theory is the study of strategic decision-making in situations where the outcome depends on the choices of multiple players. It has applications in economics, biology, and politics.' },
+            { year: 1950, title: 'Nash Equilibrium', who: 'John Nash', description: 'A concept in game theory, where no player can benefit from changing their strategy while the other players keep theirs unchanged.', additionalDetails: 'A Nash Equilibrium is a stable state in game theory. It has become a fundamental concept in understanding competitive scenarios.' },
+            { year: 1976, title: 'Four Color Theorem', who: 'Kenneth Appel and Wolfgang Haken', description: 'The first major theorem to be proven using a computer, stating that any planar map can be colored using no more than four colors.', additionalDetails: 'The proof of the Four Color Theorem was controversial because it was too long for a human to verify by hand. It relied on a computer to check thousands of cases.' },
+            { year: 1994, title: 'Fermat\'s Last Theorem', who: 'Andrew Wiles', description: 'A proof of a famous theorem that had baffled mathematicians for centuries.', additionalDetails: 'The theorem states that no three positive integers $a, b, c$ can satisfy the equation $a^n + b^n = c^n$ for any integer value of $n$ greater than 2.' },
+            { year: 2002, title: 'Poincaré Conjecture', who: 'Grigori Perelman', description: 'Perelman provided a proof for this famous conjecture, which became the first of the seven Millennium Prize Problems to be solved.', additionalDetails: 'The conjecture is a topological theorem about the characterization of the 3-sphere. Perelman famously declined the Fields Medal and the Millennium Prize for his work.' },
+            { year: 2013, title: 'Solution to the Green-Tao Theorem', who: 'Ben Green and Terence Tao', description: 'They proved that the sequence of prime numbers contains arbitrarily long arithmetic progressions.', additionalDetails: 'An arithmetic progression is a sequence of numbers where the difference between consecutive terms is constant, e.g., $3, 7, 11, 15$. This theorem showed you can find prime sequences like this of any length.' },
+            
+            <!-- Additional 25 Events -->
+            { year: -250, title: 'Archimedes\'s Calculation of Pi', who: 'Archimedes of Syracuse', description: 'He developed a rigorous method for calculating pi by using the perimeters of inscribed and circumscribed polygons.', additionalDetails: 'Archimedes\' method involved a process of "squeezing" a circle between two polygons, one inside and one outside. This provided a remarkably accurate range for the value of pi.' },
+            { year: 628, title: 'The concept of Zero', who: 'Brahmagupta', description: 'An Indian mathematician who first gave rules for operations with zero, which was a major conceptual leap for mathematics.', additionalDetails: 'Brahmagupta\'s work was fundamental for the development of modern number systems. He defined rules for operations with positive numbers, negative numbers, and zero.' },
+            { year: 1545, title: 'Solution to Cubic Equations', who: 'Girolamo Cardano', description: 'Published the first general solution for cubic and quartic equations in his book, Ars Magna.', additionalDetails: 'Cardano\'s solution for the cubic equation was a landmark achievement. It showed that negative numbers could appear in intermediate steps of a calculation, even if the final answer was positive.' },
+            { year: 1629, title: 'Mersenne Primes', who: 'Marin Mersenne', description: 'Investigated prime numbers of the form $2^p - 1$, where p is also a prime. These are known as Mersenne primes.', additionalDetails: 'Mersenne primes are of interest because of their connection to perfect numbers. A perfect number is equal to the sum of its proper divisors, and every even perfect number is a Mersenne prime.' },
+            { year: 1654, title: 'Probability Theory', who: 'Blaise Pascal and Pierre de Fermat', description: 'Their correspondence on gambling problems laid the foundation for modern probability theory.', additionalDetails: 'The initial problem that sparked their collaboration was a question about how to divide the stakes in a game of chance if the game is interrupted before it is finished.' },
+            { year: 1730, title: 'De Moivre\'s Formula', who: 'Abraham de Moivre', description: 'Connected complex numbers and trigonometry with the formula $(\cos x + i \sin x)^n = \cos(nx) + i \sin(nx)$.', additionalDetails: 'This formula is a key tool for deriving trigonometric identities and is a fundamental part of complex analysis.' },
+            { year: 1801, title: 'Disquisitiones Arithmeticae', who: 'Carl Friedrich Gauss', description: 'A foundational book on number theory, which formalized many concepts and introduced new ones like modular arithmetic.', additionalDetails: 'Gauss is often called the "Prince of Mathematicians" due to his profound contributions across multiple fields of mathematics and science.' },
+            { year: 1843, title: 'Quaternions', who: 'William Rowan Hamilton', description: 'Discovered the non-commutative number system of quaternions, which have applications in computer graphics and physics.', additionalDetails: 'Hamilton famously carved the fundamental formulas for quaternions into a stone bridge in Dublin, in a moment of pure inspiration.' },
+            { year: 1870, title: 'Group Theory', who: 'Sophus Lie', description: 'Developed the theory of continuous groups, or Lie groups, which are fundamental to modern physics and differential geometry.', additionalDetails: 'Lie groups are used to describe symmetries of differential equations, which is why they are so important in modern physics, particularly in the study of particle physics.' },
+            { year: 1891, title: 'Cantor\'s Diagonal Argument', who: 'Georg Cantor', description: 'A brilliant proof that the set of real numbers is uncountably infinite, establishing a hierarchy of infinities.', additionalDetails: 'Cantor\'s argument is a proof by contradiction. It shows that for any list of real numbers, you can always construct a new real number that is not on the list.' },
+            { year: 1900, title: 'Hilbert\'s Problems', who: 'David Hilbert', description: 'Presented a list of 23 unsolved problems in mathematics, which set the agenda for much of the 20th century mathematical research.', additionalDetails: 'These problems covered a wide range of mathematical fields and were highly influential. Many have since been solved, but some remain open today.' },
+            { year: 1930, title: 'Model Theory', who: 'Alfred Tarski', description: 'Pioneered the field of model theory, which studies the relationship between formal languages and their interpretations.', additionalDetails: 'Tarski\'s work on truth and logical consequence provided the foundation for a formal, mathematical study of semantics in logic.' },
+            { year: 1963, title: 'Chaos Theory', who: 'Edward Lorenz', description: 'His work on weather prediction led to the discovery of the "butterfly effect" and the field of chaos theory.', additionalDetails: 'The butterfly effect is the sensitive dependence on initial conditions. Lorenz found that tiny changes in his weather model\'s input could lead to drastically different outcomes.' },
+            { year: 1963, title: 'Atiyah-Singer Index Theorem', who: 'Michael Atiyah and Isadore Singer', description: 'A profound result in differential geometry and topology that relates the analytical properties of an operator to the topological properties of the manifold it acts on.', additionalDetails: 'This theorem has been described as a "bridge" between analysis and topology, connecting the world of differential equations to the world of geometric shapes.' },
+            { year: 1965, title: 'Fast Fourier Transform (FFT)', who: 'James Cooley and John Tukey', description: 'Developed an efficient algorithm for computing the discrete Fourier transform, revolutionizing signal processing and data analysis.', additionalDetails: 'The FFT algorithm is so efficient that it has been called one of the most important algorithms of the 20th century. It is used in everything from medical imaging to digital audio.' },
+            { year: 1975, title: 'Fractals', who: 'Benoit Mandelbrot', description: 'Introduced the term "fractal" and popularized their study in his book, "The Fractal Geometry of Nature."', additionalDetails: 'Fractals are infinitely complex patterns that are self-similar across different scales. They are found throughout nature, from snowflakes to coastlines.' },
+            { year: 1980, title: 'Mandelbrot Set', who: 'Benoit Mandelbrot', description: 'A fractal named after him, which is a set of complex numbers that remains bounded when a certain iterative process is applied.', additionalDetails: 'The Mandelbrot set is a famous example of a fractal that is generated by iterating a simple equation. Its intricate and beautiful structure has captivated mathematicians and artists alike.' },
+            { year: 1985, title: 'The ABC Conjecture', who: 'Joseph Oesterlé and David Masser', description: 'A famous conjecture in number theory that relates the sum of three integers to their prime factors. Its proof is still debated.', additionalDetails: 'The ABC conjecture is a deep statement about the relationship between addition and prime factorization. Its potential proof has been a major source of controversy in recent years.' },
+            { year: 1998, title: 'Sphere Packing Problem', who: 'Thomas Hales', description: 'He announced a computer-assisted proof of the Kepler conjecture, which states that no arrangement of equal-sized spheres has a greater average density than that of the face-centered cubic and hexagonal close-packed lattices.', additionalDetails: 'The problem is a long-standing question about how to stack cannonballs (or spheres) in the most efficient way. Hales\' proof was groundbreaking due to its reliance on computer verification.' },
+            { year: 2003, title: 'Soul Conjecture', who: 'Grigori Perelman', description: 'He provided a proof for the Cheeger-Gromoll Soul Conjecture, which became another of his famous contributions before his proof of the Poincaré Conjecture.', additionalDetails: 'The Soul Conjecture is a fundamental result in Riemannian geometry. Perelman\'s work on this topic was a prelude to his most famous proofs.' },
+            { year: 2007, title: 'E8 Lattice', who: 'A group of mathematicians (the Atlas of Lie Groups and Representations)', description: 'The completion of a massive project to map out the structure of the E8, a complex 248-dimensional mathematical object, which is used in string theory.', additionalDetails: 'The E8 is one of the most beautiful and complex objects in all of mathematics. The "Atlas" project was a collaborative effort involving dozens of mathematicians and computer scientists over several decades.' },
+            { year: 2012, title: 'The ABC Conjecture (Proof Announced)', who: 'Shinichi Mochizuki', description: 'Mochizuki announced a proof, but it remains a subject of intense debate and scrutiny within the mathematical community.', additionalDetails: 'Mochizuki\'s proof introduced a new field of mathematics called "inter-universal Teichmüller theory." Many mathematicians have been unable to verify its correctness, leading to ongoing controversy.' },
+            { year: 2013, title: 'Polymorphism', who: 'Ben Green and Terence Tao', description: 'Showed the existence of arithmetic progressions of primes of arbitrary length.', additionalDetails: 'This is another way of stating the Green-Tao Theorem. It is a stunning result because it shows a surprising pattern in the famously unpredictable distribution of prime numbers.' },
+            { year: 2014, title: 'Prime Gaps', who: 'Yitang Zhang', description: 'Made a major breakthrough on the twin prime conjecture by proving that there are infinitely many pairs of primes that are less than 70 million apart.', additionalDetails: 'The twin prime conjecture states that there are infinitely many pairs of primes that differ by 2 (like 11 and 13). Zhang\'s work was a huge step toward proving this, though the gap is still large.' },
+            { year: 2016, title: 'Conformal Symmetry', who: 'Maryam Mirzakhani', description: 'Won the Fields Medal for her contributions to the dynamics and geometry of Riemann surfaces and their moduli spaces.', additionalDetails: 'Mirzakhani was the first woman and first Iranian to win the Fields Medal, which is often considered the "Nobel Prize of mathematics."' },
+        ];
+        
+        const goButton = document.getElementById('goButton');
+        const stopButton = document.getElementById('stopButton');
+        const resetButton = document.getElementById('resetButton');
+        const exploreButton = document.getElementById('exploreButton');
+        const yearDisplay = document.getElementById('yearDisplay');
+        const timeMachine = document.querySelector('.time-machine');
+        const postcardsContainer = document.getElementById('postcardsContainer');
+        const noPostcards = document.getElementById('noPostcards');
+        const discoveryCounter = document.getElementById('discoveryCounter');
+        
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalEvent = document.getElementById('modalEvent');
+        const modalWho = document.getElementById('modalWho');
+        const modalWhen = document.getElementById('modalWhen');
+        const closeModalButton = document.getElementById('closeModal');
+        const moreDetailsBtn = document.getElementById('moreDetailsBtn');
+        const additionalDetailsDiv = document.getElementById('additionalDetails');
+        
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmResetButton = document.getElementById('confirmResetButton');
+        const cancelResetButton = document.getElementById('cancelResetButton');
+
+        let visitedEvents = new Set();
+        let isAnimating = false;
+        let animationInterval;
+        let selectedEvent = null;
+
+        function updateCounter() {
+            discoveryCounter.textContent = `${visitedEvents.size} / ${events.length} Discoveries`;
+        }
+
+        function savePostcards() {
+            localStorage.setItem('mathsTimeMachinePostcards', JSON.stringify([...visitedEvents]));
+        }
+
+        function loadPostcards() {
+            const savedPostcards = localStorage.getItem('mathsTimeMachinePostcards');
+            if (savedPostcards) {
+                const postcardIndexes = JSON.parse(savedPostcards);
+                visitedEvents = new Set(postcardIndexes);
+                
+                if (postcardIndexes.length > 0) {
+                    const noPostcardsElement = document.getElementById('noPostcards');
+                    if (noPostcardsElement) {
+                        noPostcardsElement.remove();
+                    }
+                    postcardIndexes.forEach(index => {
+                        const event = events[index];
+                        // Add a defensive check to ensure the event exists.
+                        if (event) {
+                            addPostcard(event);
+                        }
+                    });
+                }
+            }
+            updateCounter();
+        }
+
+        function showModal(event) {
+            modalTitle.textContent = event.title;
+            modalEvent.textContent = event.description;
+            modalWho.textContent = `Who: ${event.who}`;
+            modalWhen.textContent = `When: ${event.year}`;
+            
+            // Set up more details content and button
+            additionalDetailsDiv.textContent = event.additionalDetails;
+            additionalDetailsDiv.classList.add('hidden');
+            moreDetailsBtn.textContent = 'See More Details';
+            
+            modal.classList.remove('hidden');
+        }
+        
+        function hideModal(modalElement) {
+            modalElement.classList.add('hidden');
+        }
+
+        function addPostcard(event) {
+            const noPostcardsElement = document.getElementById('noPostcards');
+            if (noPostcardsElement) {
+                noPostcardsElement.remove();
+            }
+            
+            const postcard = document.createElement('div');
+            postcard.classList.add('p-3', 'bg-gray-700', 'rounded-xl', 'shadow-md', 'cursor-pointer', 'hover:bg-gray-600', 'transition', 'duration-200', 'text-gray-200');
+            postcard.innerHTML = `
+                <p class="font-bold text-gray-100">${event.title}</p>
+                <p class="text-sm text-gray-300">${event.year}</p>
+            `;
+            postcard.onclick = () => showModal(event);
+            postcardsContainer.appendChild(postcard);
+            updateCounter();
+        }
+
+        goButton.addEventListener('click', () => {
+            if (isAnimating || visitedEvents.size >= events.length) return;
+            isAnimating = true;
+
+            // Start shake animation
+            timeMachine.classList.add('shake');
+            goButton.disabled = true;
+            stopButton.disabled = false;
+            exploreButton.classList.add('hidden');
+            selectedEvent = null;
+
+            animationInterval = setInterval(() => {
+                yearDisplay.textContent = Math.floor(Math.random() * (2025 - (-3000) + 1)) + (-3000);
+            }, 50);
+        });
+
+        stopButton.addEventListener('click', () => {
+            clearInterval(animationInterval);
+            timeMachine.classList.remove('shake');
+            
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * events.length);
+            } while (visitedEvents.has(randomIndex) && visitedEvents.size < events.length);
+
+            // Only proceed if a new event can be found
+            if (visitedEvents.size < events.length) {
+                visitedEvents.add(randomIndex);
+                selectedEvent = events[randomIndex];
+                yearDisplay.textContent = selectedEvent.year;
+                addPostcard(selectedEvent);
+                savePostcards();
+                exploreButton.classList.remove('hidden');
+            } else {
+                // Handle case where all postcards are collected
+                yearDisplay.textContent = "All collected!";
+                setTimeout(() => yearDisplay.textContent = "2025", 2000);
+            }
+
+            goButton.disabled = false;
+            stopButton.disabled = true;
+            isAnimating = false;
+        });
+        
+        exploreButton.addEventListener('click', () => {
+            if (selectedEvent) {
+                showModal(selectedEvent);
+            }
+        });
+
+        resetButton.addEventListener('click', () => {
+            confirmModal.classList.remove('hidden');
+        });
+
+        confirmResetButton.addEventListener('click', () => {
+            // Clear postcards
+            postcardsContainer.innerHTML = '';
+            
+            // Add back the initial message
+            const noPostcardsParagraph = document.createElement('p');
+            noPostcardsParagraph.id = 'noPostcards';
+            noPostcardsParagraph.classList.add('text-gray-400', 'italic');
+            noPostcardsParagraph.textContent = 'No journeys yet. Press \'GO\' to collect your first postcard!';
+            postcardsContainer.appendChild(noPostcardsParagraph);
+
+            // Reset state
+            visitedEvents.clear();
+            yearDisplay.textContent = "2025";
+            localStorage.removeItem('mathsTimeMachinePostcards');
+            updateCounter();
+            hideModal(confirmModal);
+            exploreButton.classList.add('hidden');
+        });
+        
+        cancelResetButton.addEventListener('click', () => {
+            hideModal(confirmModal);
+        });
+
+        moreDetailsBtn.addEventListener('click', () => {
+            if (additionalDetailsDiv.classList.contains('hidden')) {
+                additionalDetailsDiv.classList.remove('hidden');
+                moreDetailsBtn.textContent = 'Hide Details';
+            } else {
+                additionalDetailsDiv.classList.add('hidden');
+                moreDetailsBtn.textContent = 'See More Details';
+            }
+        });
+
+        closeModalButton.addEventListener('click', () => {
+            hideModal(modal);
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target.id === 'modal') {
+                hideModal(modal);
+            }
+        });
+        
+        confirmModal.addEventListener('click', (e) => {
+            if (e.target.id === 'confirmModal') {
+                hideModal(confirmModal);
+            }
+        });
+
+        // Initial load
+        window.onload = loadPostcards;
+    </script>
+
+</body>
+</html>
